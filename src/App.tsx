@@ -1,10 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './App.scss';
 
+import cn from 'classnames';
+import usersFromServer from './api/users';
 import { products } from './api/data';
 import { Table } from './components/Table';
 
 export const App: React.FC = () => {
+  const [productsList, setProductsList] = useState(products);
+  const [activeFilter, setActiveFilter] = useState(0);
+
+  const clearUserFilter = () => setProductsList(products);
+
+  const filterByUserId = (id: number) => {
+    const filter = [...products].filter((p) => p.category?.ownerId === id);
+
+    setActiveFilter(id);
+    setProductsList(filter);
+  };
+
   return (
     <div className="section">
       <div className="container">
@@ -15,21 +29,26 @@ export const App: React.FC = () => {
             <p className="panel-heading">Filters</p>
 
             <p className="panel-tabs has-text-weight-bold">
-              <a data-cy="FilterAllUsers" href="#/">
+              <a
+                onClick={clearUserFilter}
+                data-cy="FilterAllUsers"
+                href="#/"
+                className={cn({ 'is-active': activeFilter === 0 })}
+              >
                 All
               </a>
 
-              <a data-cy="FilterUser" href="#/">
-                User 1
-              </a>
-
-              <a data-cy="FilterUser" href="#/" className="is-active">
-                User 2
-              </a>
-
-              <a data-cy="FilterUser" href="#/">
-                User 3
-              </a>
+              {usersFromServer.map((user) => (
+                <a
+                  key={user.id}
+                  onClick={() => filterByUserId(user.id)}
+                  data-cy="FilterUser"
+                  href="#/"
+                  className={cn({ 'is-active': activeFilter === user.id })}
+                >
+                  {user.name}
+                </a>
+              ))}
             </p>
 
             <div className="panel-block">
@@ -107,7 +126,7 @@ export const App: React.FC = () => {
             No products matching selected criteria
           </p>
 
-          <Table products={products} />
+          <Table products={productsList} />
         </div>
       </div>
     </div>
