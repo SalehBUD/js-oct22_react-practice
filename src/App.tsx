@@ -15,7 +15,7 @@ export const App: React.FC = () => {
     let filter = products;
 
     if (userId !== 0) {
-      filter = products.filter((p) => p.category?.ownerId === userId);
+      filter = filter.filter((p) => p.category?.ownerId === userId);
     }
 
     if (name !== '') {
