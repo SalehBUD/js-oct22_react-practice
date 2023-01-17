@@ -8,14 +8,22 @@ import { Table } from './components/Table';
 
 export const App: React.FC = () => {
   const [productsList, setProductsList] = useState(products);
-  const [activeFilter, setActiveFilter] = useState(0);
+  const [filterByUser, setFilterByUser] = useState(0);
+  const [filterByName, setFilterByName] = useState('');
 
-  const clearUserFilter = () => setProductsList(products);
+  const filterList = (userId: number, name: string) => {
+    let filter = products;
 
-  const filterByUserId = (id: number) => {
-    const filter = [...products].filter((p) => p.category?.ownerId === id);
+    if (userId !== 0) {
+      filter = products.filter((p) => p.category?.ownerId === userId);
+    }
 
-    setActiveFilter(id);
+    if (name !== '') {
+      filter = filter.filter((p) => p.name.toLocaleLowerCase()
+        .includes(name.trim().toLocaleLowerCase()));
+    }
+
+    setFilterByUser(userId);
     setProductsList(filter);
   };
 
@@ -30,10 +38,10 @@ export const App: React.FC = () => {
 
             <p className="panel-tabs has-text-weight-bold">
               <a
-                onClick={clearUserFilter}
+                onClick={() => filterList(0, filterByName)}
                 data-cy="FilterAllUsers"
                 href="#/"
-                className={cn({ 'is-active': activeFilter === 0 })}
+                className={cn({ 'is-active': filterByUser === 0 })}
               >
                 All
               </a>
@@ -41,10 +49,10 @@ export const App: React.FC = () => {
               {usersFromServer.map((user) => (
                 <a
                   key={user.id}
-                  onClick={() => filterByUserId(user.id)}
+                  onClick={() => filterList(user.id, filterByName)}
                   data-cy="FilterUser"
                   href="#/"
-                  className={cn({ 'is-active': activeFilter === user.id })}
+                  className={cn({ 'is-active': filterByUser === user.id })}
                 >
                   {user.name}
                 </a>
@@ -58,21 +66,33 @@ export const App: React.FC = () => {
                   type="text"
                   className="input"
                   placeholder="Search"
-                  value="qwe"
+                  value={filterByName}
+                  onChange={(event) => {
+                    const { value } = event.target;
+
+                    setFilterByName(value);
+                    filterList(filterByUser, value);
+                  }}
                 />
 
                 <span className="icon is-left">
                   <i className="fas fa-search" aria-hidden="true" />
                 </span>
 
-                <span className="icon is-right">
-                  {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
-                  <button
-                    data-cy="ClearButton"
-                    type="button"
-                    className="delete"
-                  />
-                </span>
+                {filterByName !== '' && (
+                  <span className="icon is-right">
+                    {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
+                    <button
+                      data-cy="ClearButton"
+                      type="button"
+                      className="delete"
+                      onClick={() => {
+                        setFilterByName('');
+                        filterList(filterByUser, '');
+                      }}
+                    />
+                  </span>
+                )}
               </p>
             </div>
 
@@ -122,11 +142,13 @@ export const App: React.FC = () => {
         </div>
 
         <div className="box table-container">
-          <p data-cy="NoMatchingMessage">
-            No products matching selected criteria
-          </p>
-
-          <Table products={productsList} />
+          {productsList.length > 0 ? (
+            <Table products={productsList} />
+          ) : (
+            <p data-cy="NoMatchingMessage">
+              No products matching selected criteria
+            </p>
+          )}
         </div>
       </div>
     </div>
