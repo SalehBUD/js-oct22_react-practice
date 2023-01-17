@@ -134,6 +134,11 @@ export const App: React.FC = () => {
                 data-cy="ResetAllButton"
                 href="#/"
                 className="button is-link is-outlined is-fullwidth"
+                onClick={() => {
+                  setFilterByName('');
+                  setFilterByUser(0);
+                  filterList(0, '');
+                }}
               >
                 Reset all filters
               </a>
